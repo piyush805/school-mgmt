@@ -1,4 +1,5 @@
 {
-  "editor.fontFamily": " 'Fira Code', 'JetBrains Mono', 'Fragment Mono', 'Source Code Pro', 'Roboto Mono', JuliaMono,'Oxygen Mono', 'Reddit Mono', Inconsolata,   Hack, Consolas, 'Courier New',  monospace",
-  "files.autoSave": "afterDelay"
+  "editor.fontFamily": "'Fira Code', 'JetBrains Mono', 'Fragment Mono', 'Source Code Pro', 'Roboto Mono', JuliaMono,'Oxygen Mono', 'Reddit Mono', Inconsolata,   Hack, Consolas, 'Courier New',  monospace",
+  "files.autoSave": "afterDelay",
+  "editor.fastScrollSensitivity": 30
 }
