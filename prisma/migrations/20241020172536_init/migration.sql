@@ -10,7 +10,7 @@ CREATE TABLE "Admin" (
     "username" TEXT NOT NULL,
 
     CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
-);     
+);      
 
 -- CreateTable
 CREATE TABLE "Student" (
