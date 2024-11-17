@@ -2,10 +2,10 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, teachersData } from "@/lib/data";
+import { lessonsData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
-import { Class, Subject, Teacher } from "@prisma/client";
+import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -98,6 +98,7 @@ const TeacherListPage = async ({
 }) => {
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
+
   // const teachers = await prisma.teacher.findMany({
   //   include: {
   //     subjects: true,
@@ -106,9 +107,40 @@ const TeacherListPage = async ({
   //   take: ITEMS_PER_PAGE,
   //   skip: ITEMS_PER_PAGE * (p - 1), // skip first 10 items when page exists
   // });
+
   // const count = await prisma.teacher.count();
+
+  // URL PARAMS CONDITION
+  const query: Prisma.TeacherWhereInput = {};
+  // to protect data from accessing private data - which is not intended for this page
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case "classId": {
+            query.lessons = {
+              some: {
+                classId: parseInt(value),
+              },
+            };
+            break;
+          }
+          case "search":
+            query.name = { contains: value, mode: "insensitive" };
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
+      where:
+        // where needs to have nested query to protected it, not simply where: queryParams
+        // instead of passing just any query param
+        query,
       include: {
         subjects: true,
         classes: true,
@@ -116,7 +148,9 @@ const TeacherListPage = async ({
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1), // skip first 10 items when page exists
     }),
-    prisma.teacher.count(),
+    prisma.teacher.count({
+      where: query,
+    }),
   ]);
 
   return (
