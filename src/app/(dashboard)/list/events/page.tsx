@@ -9,6 +9,7 @@ import Table from "@/components/Table";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import TableSearch from "@/components/TableSearch";
+import { currentUserId } from "@/lib/utils";
 
 type EventListPage = Event & {
   class: Class;
@@ -49,7 +50,7 @@ const renderRow = (item: EventListPage) => (
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name}</td>
+    <td>{item.class?.name || "-"}</td>
     <td className="hidden md:table-cell">
       {new Intl.DateTimeFormat("en-US").format(item.startTime)}
     </td>
@@ -109,6 +110,36 @@ const EventListPage = async ({
       }
     }
   }
+
+  // ROLE CONDITIONS
+  const roleConditions = {
+    teacher: {
+      lessons: {
+        some: {
+          teacherId: currentUserId!,
+        },
+      },
+    },
+    student: {
+      students: {
+        some: {
+          id: currentUserId!,
+        },
+      },
+    },
+    parent: {
+      students: {
+        some: {
+          parentId: currentUserId!,
+        },
+      },
+    },
+  };
+
+  query.OR = [
+    { classId: null },
+    { class: roleConditions[role as keyof typeof roleConditions] || {} },
+  ];
 
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({

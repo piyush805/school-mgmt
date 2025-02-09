@@ -57,18 +57,17 @@ const renderRow = (item: AssignmentListPage) => (
     </td>
     <td>
       <div className="flex  items-center gap-2">
-        {role === "admin" ||
-          (role === "teacher" && (
-            <>
-              <FormModal table="assignment" type="update" data={item} />
-              <FormModal table="assignment" type="delete" id={item.id} />
-            </>
-          ))}
+        {(role === "admin" || role === "teacher") && (
+          <>
+            <FormModal table="assignment" type="update" data={item} />
+            <FormModal table="assignment" type="delete" id={item.id} />
+          </>
+        )}
       </div>
     </td>
   </tr>
 );
-const ResultListPage = async ({
+const AssignmentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -108,6 +107,14 @@ const ResultListPage = async ({
       break;
     case "teacher":
       query.lesson.teacherId = currentUserId!;
+    case "student":
+      query.lesson.class = {
+        students: {
+          some: {
+            id: currentUserId!,
+          },
+        },
+      };
     default:
       break;
   }
@@ -161,4 +168,4 @@ const ResultListPage = async ({
   );
 };
 
-export default ResultListPage;
+export default AssignmentListPage;

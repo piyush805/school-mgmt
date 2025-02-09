@@ -1,7 +1,7 @@
 import Image from "next/image";
 import prisma from "@/lib/prisma";
 
-import { role } from "@/lib/utils";
+import { currentUserId, role } from "@/lib/utils";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { Announcement, Class, Prisma } from "@prisma/client";
 
@@ -41,7 +41,7 @@ const renderRow = (item: AnnouncementListPage) => (
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
   >
     <td className="flex items-center gap-4 p-4">{item.title}</td>
-    <td>{item.class.name}</td>
+    <td>{item.class?.name || "-"}</td>
     <td className="hidden md:table-cell">
       {new Intl.DateTimeFormat("en-US").format(item.date)}
     </td>
@@ -81,6 +81,35 @@ const AnnouncementListPage = async ({
       }
     }
   }
+  // ROLE CONDITIONS
+  const roleConditions = {
+    teacher: {
+      lessons: {
+        some: {
+          teacherId: currentUserId!,
+        },
+      },
+    },
+    student: {
+      students: {
+        some: {
+          id: currentUserId!,
+        },
+      },
+    },
+    parent: {
+      students: {
+        some: {
+          parentId: currentUserId!,
+        },
+      },
+    },
+  };
+
+  query.OR = [
+    { classId: null },
+    { class: roleConditions[role as keyof typeof roleConditions] || {} },
+  ];
 
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({
